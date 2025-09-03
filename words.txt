@@ -1,0 +1,12 @@
+casa
+carro
+mar
+ar
+agua
+terra
+povo
+fogo
+mãe
+pai
+filho
+cota
