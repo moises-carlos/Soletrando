@@ -1,0 +1,3 @@
+customtkinter
+./qi-3.1.5-cp312-cp312-macosx_13_0_arm64.whl
+https://files.pythonhosted.org/packages/a6/a2/9af765a4e955af83401134feae3dbd11b8a196bbe843345d9f86386f1832/qi-3.1.5-cp312-cp312-macosx_13_0_arm64.whl
