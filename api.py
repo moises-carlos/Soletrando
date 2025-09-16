@@ -153,23 +153,57 @@ class IpConfigApp(ctk.CTk):
         connect_button.pack(pady=20)
         self.bind("<Return>", lambda event: self.start_main_app())
 
+    def _show_popup(self, title, message):
+        popup = ctk.CTkToplevel(self)
+        popup.title(title)
+        
+        popup_width = 350
+        popup_height = 150
+        popup.geometry(f"{popup_width}x{popup_height}")
+        popup.resizable(False, False)
+
+        popup.transient(self)
+        popup.grab_set()
+
+        self.update_idletasks()
+        parent_x = self.winfo_x()
+        parent_y = self.winfo_y()
+        parent_width = self.winfo_width()
+        parent_height = self.winfo_height()
+        x = parent_x + (parent_width - popup_width) // 2
+        y = parent_y + (parent_height - popup_height) // 2
+        popup.geometry(f"+{x}+{y}")
+
+        main_frame = ctk.CTkFrame(popup, fg_color="transparent")
+        main_frame.pack(expand=True, fill="both")
+        main_frame.bind("<Button-1>", lambda event: popup.destroy())
+
+        label = ctk.CTkLabel(main_frame, text=message, font=ctk.CTkFont(size=16))
+        label.place(relx=0.5, rely=0.4, anchor="center")
+        label.bind("<Button-1>", lambda event: popup.destroy())
+
+        ok_button = ctk.CTkButton(main_frame, text="OK", command=popup.destroy, width=100)
+        ok_button.place(relx=0.5, rely=0.8, anchor="center")
+
+        popup.wait_window()
+
     def start_main_app(self):
         ip = self.ip_entry.get().strip()
         if not ip:
+            self._show_popup("Erro de Entrada", "O campo de IP não pode estar vazio.")
             return
 
         connection = NaoConnection(ip=ip, port=NAO_PORT)
         
-        if not connection.session:
-            print("Falha na conexão. A aplicação não será iniciada.")
-            connection.close() 
-            return
-
-        commands = NaoCommands(connection)
-        
-        self.destroy()
-        app = SpellingGameApp(words=self.words, nao_commands=commands)
-        app.mainloop()
+        if connection.session:
+            self._show_popup("Sucesso", "Conexão testada e deu sucesso!")
+            commands = NaoCommands(connection)
+            self.destroy()
+            app = SpellingGameApp(words=self.words, nao_commands=commands)
+            app.mainloop()
+        else:
+            self._show_popup("Erro de Conexão", "Conexão testada e deu erro.")
+            connection.close()
 
 
 def get_words():
