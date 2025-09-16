@@ -1,18 +1,17 @@
 import customtkinter as ctk
 import random
 import threading
-from nao_controller import NaoController
+from nao_connection import NaoConnection
+from nao_commands import NaoCommands
 
-
-NAO_PORT = 9559  # porta do NAO não costuma mudar
-
+NAO_PORT = 9559
 
 class SpellingGameApp(ctk.CTk):
-    def __init__(self, words, nao_controller):
+    def __init__(self, words, nao_commands: NaoCommands):
         super().__init__()
 
         self.words = words
-        self.nao = nao_controller
+        self.nao = nao_commands
         self.current_word = ""
         self.user_spelling = ""
 
@@ -48,13 +47,15 @@ class SpellingGameApp(ctk.CTk):
         self.spell_button.grid(row=2, column=1, padx=(10, 20), pady=20, sticky="ew")
         self.spell_button.configure(state="disabled")
 
-        if self.nao.session:
+        if self.nao.connection.session:
             self.nao.say("Olá! Estou pronto para o jogo de soletrar.")
         else:
             self.status_label.configure(
                 text="ERRO: Não foi possível conectar ao robô NAO.", 
                 text_color="red"
             )
+            self.new_word_button.configure(state="disabled")
+            self.spell_button.configure(state="disabled")
 
     def on_closing(self):
         self.nao.close()
@@ -93,7 +94,10 @@ class SpellingGameApp(ctk.CTk):
 
     def finalize_check(self):
         self.update_spelled_letters()
-        if self.user_spelling == self.current_word:
+        normalized_spelling = self.user_spelling.lower()
+        normalized_word = self.current_word.lower()
+
+        if normalized_spelling == normalized_word:
             self.status_label.configure(
                 text="Parabéns, você acertou!", text_color="#2ECC71"
             )
@@ -143,18 +147,28 @@ class IpConfigApp(ctk.CTk):
 
         self.ip_entry = ctk.CTkEntry(self, placeholder_text="Ex: 192.168.1.10", width=250)
         self.ip_entry.pack(pady=10)
+        self.ip_entry.focus()
 
         connect_button = ctk.CTkButton(self, text="Conectar", command=self.start_main_app)
         connect_button.pack(pady=20)
+        self.bind("<Return>", lambda event: self.start_main_app())
 
     def start_main_app(self):
         ip = self.ip_entry.get().strip()
         if not ip:
-            return  # não deixa continuar sem IP
+            return
 
-        nao = NaoController(ip=ip, port=NAO_PORT)
+        connection = NaoConnection(ip=ip, port=NAO_PORT)
+        
+        if not connection.session:
+            print("Falha na conexão. A aplicação não será iniciada.")
+            connection.close() 
+            return
+
+        commands = NaoCommands(connection)
+        
         self.destroy()
-        app = SpellingGameApp(words=self.words, nao_controller=nao)
+        app = SpellingGameApp(words=self.words, nao_commands=commands)
         app.mainloop()
 
 
