@@ -1,3 +1,2 @@
 customtkinter
-./qi-3.1.5-cp312-cp312-macosx_13_0_arm64.whl
-https://files.pythonhosted.org/packages/a6/a2/9af765a4e955af83401134feae3dbd11b8a196bbe843345d9f86386f1832/qi-3.1.5-cp312-cp312-macosx_13_0_arm64.whl
+qi @ https://files.pythonhosted.org/packages/da/23/01999b202e1ada1e98460935f52442952a080921bcd7b10d078f95a7bc91/qi-3.1.5-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
