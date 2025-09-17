@@ -1,3 +1,5 @@
+# Este arquivo define os comandos para interação com o robô NAO.
+
 import time
 from nao_connection import NaoConnection
 
@@ -61,35 +63,40 @@ class NaoCommands:
 
         current_spelling = ""
         vocabulary = list(LETTER_MAP.keys()) + ["confirmar", "apagar"]
-        self.asr.setVocabulary(vocabulary, False)
-        self.asr.subscribe("SpellingGame")
-        self.say("Pode começar a soletrar. Diga 'confirmar' quando terminar ou 'apagar' para a última letra.")
         
-        self.memory.insertData("WordRecognized", ["", 0])
+        try:
+            self.asr.setVocabulary(vocabulary, False)
+            self.asr.subscribe("SpellingGame")
+            self.say("Pode começar a soletrar. Diga 'confirmar' quando terminar ou 'apagar' para a última letra.")
+            
+            self.memory.insertData("WordRecognized", ["", 0])
 
-        while True:
-            time.sleep(1)
-            value = self.memory.getData("WordRecognized")
-            if value and value[0]:
-                word = value[0].lower()
-                confidence = value[1]
-                self.memory.insertData("WordRecognized", ["", 0])
+            while True:
+                time.sleep(1)
+                value = self.memory.getData("WordRecognized")
+                if value and value[0]:
+                    word = value[0].lower()
+                    confidence = value[1]
+                    self.memory.insertData("WordRecognized", ["", 0])
 
-                if confidence < 0.3:
-                    continue
+                    if confidence < 0.3:
+                        continue
 
-                if word == "confirmar":
-                    on_final_word(current_spelling)
-                    break
-                elif word == "apagar":
-                    if current_spelling:
-                        current_spelling = current_spelling[:-1]
+                    if word == "confirmar":
+                        on_final_word(current_spelling)
+                        break
+                    elif word == "apagar":
+                        if current_spelling:
+                            current_spelling = current_spelling[:-1]
+                            on_letter_spelled(current_spelling)
+                    elif word in LETTER_MAP:
+                        current_spelling += LETTER_MAP[word]
                         on_letter_spelled(current_spelling)
-                elif word in LETTER_MAP:
-                    current_spelling += LETTER_MAP[word]
-                    on_letter_spelled(current_spelling)
-
-        self.asr.unsubscribe("SpellingGame")
+        except Exception as e:
+            print(f"Ocorreu um erro durante o reconhecimento de voz: {e}")
+            self.say("Desculpe, ocorreu um erro.")
+        finally:
+            self.asr.unsubscribe("SpellingGame")
 
     def close(self):
         """Encerra a conexão com o robô."""
