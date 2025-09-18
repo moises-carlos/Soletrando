@@ -41,6 +41,9 @@ class NaoCommands:
         if self.asr:
             try:
                 self.asr.setLanguage("Brazilian")
+                self.asr.setParameter("Sensitivity", 0.7)
+                self.asr.setParameter("NoiseSuppression", True)
+            
             except Exception as e:
                 print(f"Erro ao configurar o idioma: {e}")
 
@@ -79,7 +82,7 @@ class NaoCommands:
                     confidence = value[1]
                     self.memory.insertData("WordRecognized", ["", 0])
 
-                    if confidence < 0.3:
+                    if confidence < 0.5:
                         continue
 
                     if word == "confirmar":
